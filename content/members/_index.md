@@ -1,28 +1,9 @@
----
-title: "Members"
----
-<style>
-@media (max-width: 600px) {
-  .member-block {
-    flex-direction: column !important;
-    align-items: center !important;
-    text-align: center;
-  }
-  .member-block img {
-    margin-bottom: 10px;
-  }
-}
-</style>
-
-Team A members
-
----
 
 ### JP Maestas
 
 <div class="member-block" style="display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap; margin-bottom: 40px;">
 
-  <img src="headshot.png"
+  <img src="DSC00052.jpeg"
        alt="JP M"
        style="width: 150px; height: 150px; object-fit: cover; border-radius: 0%; object-position: center; flex-shrink: 0;">
 
