@@ -1,0 +1,33 @@
+baseURL: 'https://wonjun-seo.github.io/cosmos-demo/'
+languageCode: en-us
+title: "Team A"
+theme: "PaperMod"
+
+params:
+  defaultTheme: auto
+  disableThemeToggle: true
+  ShowToc: false
+  profileMode:
+    enabled: true
+    title: "Team A"
+    subtitle: "Description"
+    imageUrl: "butter.jpeg"
+    imageWidth: 120 # custom size
+    imageHeight: 120 # custom size
+
+
+menu:
+  main:
+    - identifier: Members
+      name: Members
+      url: /members
+      weight: 10
+    - identifier: Project
+      name: Project
+      url: /project/
+      weight: 20
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
