@@ -1,6 +1,6 @@
 baseURL: 'https://jpmm3005.github.io/cosmos-demo/'
 languageCode: en-us
-title: "Team A"
+title: "Test Website"
 theme: "PaperMod"
 
 params:
