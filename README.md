@@ -1,28 +1,16 @@
-# Demo for Group website
 
-This website is built with [Hugo](https://gohugo.io/) and uses the [PaperMod](https://github.com/adityatelange/hugo-PaperMod) theme.
+### JP Maestas
 
-## Guide
-Only one team member needs to follow these steps.
+<div class="member-block" style="display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap; margin-bottom: 40px;">
 
-1. Click “**Use this template**” to create a new repository.
-2. Repository title should be your **team name**, and make sure it is set to **public**.
-3. Go to **Settings**->**Pages**, and under **Source**, select **Github Actions**.
-4. Go to **Code** tab, and open `hugo.yaml` file.
-5. Update the `baseurl` field to `https://<username>.github.io/<teamname>/`.
-6. Commit the changes.
-7. Your website will be available at https://<username>.github.io/<teamname>/ after a few minutes.
-8. Go to **Settings**->**Collaborators**, and add other team members.
+  <img src="DSC00052.jpeg"
+       alt="JP M"
+       style="width: 254px; height: 170px; object-fit: cover; border-radius: 0%; object-position: center; flex-shrink: 0;">
 
-## Assignments
-Update the **Members** tab.
+  <div style="flex: 1; text-align: left;">
+    <p style="margin: 0; padding-top: 0.5em;">
+      Hello! My name is JP, and I am a second year Mathematics and Statistics Undergraduate at UC Davis
+    </p>
+  </div>
 
-#### Instructions
-- Open `content/members/_index.md`.
-- Add each member's name and a short introduction.
-
-(Optional)
-
-- To include photos, upload image files to `content/members/` folder and reference the correct file names in `content/members/_index.md`.
-- Update `README.md` file.
-- To change the profile photo on the homepage, upload the image to the `static/` directory and update the `imageUrl` field in the `hugo.yaml` file.
+</div>
