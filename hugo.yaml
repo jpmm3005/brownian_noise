@@ -21,10 +21,6 @@ menu:
       name: Members
       url: /members
       weight: 10
-    - identifier: Project
-      name: Project
-      url: /project/
-      weight: 20
 
 markup:
   goldmark:
