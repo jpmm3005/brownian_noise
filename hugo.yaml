@@ -9,8 +9,8 @@ params:
   ShowToc: false
   profileMode:
     enabled: true
-    title: "Team A"
-    subtitle: "Description"
+    title: "Test Website"
+    subtitle: " "
     imageUrl: !(https://www.coengoedegebure.com/content/images/2017/07/fractalconsolesmall.png)
     imageWidth: 120 # custom size
     imageHeight: 120 # custom size
