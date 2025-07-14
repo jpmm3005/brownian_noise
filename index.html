@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Spotify Login</title>
+  </head>
+  <body>
+    <h1>Login with Spotify</h1>
+    <button onclick="login()">Log in</button>
+
+    <script>
+      function login() {
+        const clientId = "YOUR_CLIENT_ID";
+        const redirectUri = "https://jpmm3005.github.io/brownian_noise/callback/";
+        const scope = "user-top-read user-read-recently-played";
+
+        const authUrl =
+          "https://accounts.spotify.com/authorize?" +
+          `client_id=${clientId}` +
+          `&response_type=token` +
+          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+          `&scope=${encodeURIComponent(scope)}`;
+
+        window.location.href = authUrl;
+      }
+    </script>
+  </body>
+</html>
