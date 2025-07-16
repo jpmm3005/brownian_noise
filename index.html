@@ -133,32 +133,29 @@
 
     return await response.json();
   }
+  async function getAudioFeatures(trackIds) {
+  const accessToken = localStorage.getItem("access_token"); // or however you store it
 
-  async function getAudioFeatures(token, trackIds) {
-    const allFeatures = [];
+  const url = `https://api.spotify.com/v1/audio-features?ids=${trackIds.join(",")}`;
 
-    for (let i = 0; i < trackIds.length; i += 100) {
-      const batch = trackIds.slice(i, i + 100);
-      const idsParam = batch.join(',');
-
-      const res = await fetch(`https://api.spotify.com/v1/audio-features?ids=${idsParam}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (res.status === 200) {
-        const data = await res.json();
-        allFeatures.push(...data.audio_features.filter(f => f !== null));
-      } else {
-        const text = await res.text();
-        console.warn(`❌ Failed batch: ${idsParam}`);
-        console.warn(`Response status: ${res.status}, body: ${text}`);
-      }
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`
     }
+  });
 
-    return allFeatures;
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error("Spotify API error:", res.status, errorText);
+    throw new Error(`Failed to fetch audio features: ${res.status}`);
   }
+
+  const data = await res.json();
+  console.log("Audio features:", data);
+  return data;
+}
+
 
   function downloadCSVFromTracks(data) {
     const headers = ["id", "name", "artist", "album", "popularity", "duration_ms"];
