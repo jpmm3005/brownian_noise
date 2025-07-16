@@ -149,7 +149,7 @@
     status: res.status,
     statusText: res.statusText,
     url,
-    token: accessToken,
+    token: token,
     body: errorText
   });
   throw new Error(`Failed to fetch audio features: ${res.status}`);
