@@ -16,6 +16,14 @@
       margin-bottom: 20px;
     }
 
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      width: 300px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
     button {
       background-color: #1db954;
       color: white;
@@ -24,6 +32,7 @@
       font-size: 16px;
       border-radius: 24px;
       cursor: pointer;
+      margin-top: 20px;
     }
 
     button:hover {
@@ -38,11 +47,16 @@
 </head>
 <body>
   <h1>Export Your Spotify Top Tracks</h1>
-  <button onclick="redirectToSpotify()">Login with Spotify</button>
+
+  <div>
+    <input id="clientIdInput" type="text" placeholder="Enter your Spotify Client ID" />
+    <br />
+    <button onclick="redirectToSpotify()">Login with Spotify</button>
+  </div>
+
   <div id="message"></div>
 
   <script>
-    const clientId = "b64fd8d41ec347fc9920a1549e265fcc";
     const redirectUri = "https://jpmm3005.github.io/brownian_noise/";
     const scopes = "user-top-read";
 
@@ -61,6 +75,15 @@
     }
 
     async function redirectToSpotify() {
+      const clientId = document.getElementById("clientIdInput").value.trim();
+
+      if (!clientId) {
+        document.getElementById("message").innerText = "Please enter a valid Client ID.";
+        return;
+      }
+
+      localStorage.setItem("client_id", clientId);
+
       const codeVerifier = generateRandomString(128);
       const codeChallenge = await generateCodeChallenge(codeVerifier);
       localStorage.setItem('code_verifier', codeVerifier);
@@ -79,6 +102,7 @@
 
     async function getAccessToken(code) {
       const codeVerifier = localStorage.getItem('code_verifier');
+      const clientId = localStorage.getItem('client_id');
 
       const body = new URLSearchParams({
         client_id: clientId,
