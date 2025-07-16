@@ -127,16 +127,34 @@
     });
 
     const data = await response.json();
-    if (data.items) {
-      downloadCSV(data);
-      downloadToken(token);
-      document.getElementById("message").innerText = "✅ CSV and token downloaded!";
-    } else {
-      document.getElementById("message").innerText = "❌ No data found.";
-    }
+    return data;
   }
 
-  function downloadCSV(data) {
+  async function getAudioFeatures(token, trackIds) {
+    const allFeatures = [];
+
+    for (let i = 0; i < trackIds.length; i += 100) {
+      const batch = trackIds.slice(i, i + 100);
+      const idsParam = batch.join(',');
+
+      const res = await fetch(`https://api.spotify.com/v1/audio-features?ids=${idsParam}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (res.status === 200) {
+        const data = await res.json();
+        allFeatures.push(...data.audio_features.filter(f => f !== null));
+      } else {
+        console.warn(`❌ Failed batch: ${idsParam}`);
+      }
+    }
+
+    return allFeatures;
+  }
+
+  function downloadCSVFromTracks(data) {
     const headers = ["id", "name", "artist", "album", "popularity", "duration_ms"];
     const rows = data.items.map(track => [
       track.id,
@@ -150,6 +168,19 @@
     const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv" });
     triggerDownload(blob, "top_tracks.csv");
+  }
+
+  function downloadAudioCSV(features) {
+    if (features.length === 0) {
+      document.getElementById("message").innerText = "⚠️ No audio features found to download.";
+      return;
+    }
+    const headers = Object.keys(features[0]);
+    const rows = features.map(f => headers.map(h => f[h]));
+    const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    triggerDownload(blob, "audio_features.csv");
   }
 
   function downloadToken(token) {
@@ -174,16 +205,24 @@
     const code = params.get("code");
 
     if (code) {
+      document.getElementById("message").innerText = "⏳ Fetching your top tracks and audio features...";
       const tokenResponse = await getAccessToken(code);
+
       if (tokenResponse.access_token) {
-        getTopTracks(tokenResponse.access_token);
+        const topTrackData = await getTopTracks(tokenResponse.access_token);
+        downloadCSVFromTracks(topTrackData);
+        downloadToken(tokenResponse.access_token);
+
+        const trackIds = topTrackData.items.map(track => track.id);
+        const features = await getAudioFeatures(tokenResponse.access_token, trackIds);
+        downloadAudioCSV(features);
+
+        document.getElementById("message").innerText = "✅ All files downloaded!";
       } else {
         document.getElementById("message").innerText = "❌ Authorization failed.";
       }
     }
   };
-</script>
-
-  
+  </script>
 </body>
 </html>
