@@ -1,5 +1,12 @@
 import requests
 
+with open("static/access_token.txt") as f:
+    token = f.read().strip()
+
+print(token)
+
+
+
 def check_token_scopes(token):
     url = "https://api.spotify.com/v1/me"
     headers = {"Authorization": f"Bearer {token}"}
