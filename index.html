@@ -208,6 +208,8 @@
     if (code) {
       document.getElementById("message").innerText = "⏳ Fetching your top tracks and audio features...";
       const tokenResponse = await getAccessToken(code);
+      console.log(tokenResponse);
+
 
       if (tokenResponse.access_token) {
         const topTrackData = await getTopTracks(tokenResponse.access_token);
