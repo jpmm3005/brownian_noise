@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>Spotify Top Tracks to CSV</title>
-  <!--<link rel="stylesheet" href="style.css">--->
   <style>
     body {
       font-family: sans-serif;
@@ -59,7 +58,6 @@
   <script>
   const redirectUri = "https://jpmm3005.github.io/brownian_noise/";
   const scopes = "user-top-read user-read-private";
-;
 
   function generateRandomString(length) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
@@ -127,14 +125,13 @@
       headers: { Authorization: `Bearer ${token}` }
     });
 
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("Error fetching top tracks:", error);
-    throw new Error(`Spotify API error: ${response.status}`);
-  }
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Error fetching top tracks:", error);
+      throw new Error(`Spotify API error: ${response.status}`);
+    }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   }
 
   async function getAudioFeatures(token, trackIds) {
@@ -150,18 +147,13 @@
         }
       });
 
-
-    if (!response.ok) {
-      const error = await response.json();
-      console.error("Error fetching Audio Features:", error);
-      throw new Error(`Spotify API error: ${response.status}`);
-    }
-
       if (res.status === 200) {
         const data = await res.json();
         allFeatures.push(...data.audio_features.filter(f => f !== null));
       } else {
+        const text = await res.text();
         console.warn(`❌ Failed batch: ${idsParam}`);
+        console.warn(`Response status: ${res.status}, body: ${text}`);
       }
     }
 
@@ -220,22 +212,26 @@
 
     if (code) {
       document.getElementById("message").innerText = "⏳ Fetching your top tracks and audio features...";
-      const tokenResponse = await getAccessToken(code);
-      console.log(tokenResponse);
+      try {
+        const tokenResponse = await getAccessToken(code);
+        console.log(tokenResponse);
 
+        if (tokenResponse.access_token) {
+          const topTrackData = await getTopTracks(tokenResponse.access_token);
+          downloadCSVFromTracks(topTrackData);
+          downloadToken(tokenResponse.access_token);
 
-      if (tokenResponse.access_token) {
-        const topTrackData = await getTopTracks(tokenResponse.access_token);
-        downloadCSVFromTracks(topTrackData);
-        downloadToken(tokenResponse.access_token);
+          const trackIds = topTrackData.items.map(track => track.id);
+          const features = await getAudioFeatures(tokenResponse.access_token, trackIds);
+          downloadAudioCSV(features);
 
-        const trackIds = topTrackData.items.map(track => track.id);
-        const features = await getAudioFeatures(tokenResponse.access_token, trackIds);
-        downloadAudioCSV(features);
-
-        document.getElementById("message").innerText = "✅ All files downloaded!";
-      } else {
-        document.getElementById("message").innerText = "❌ Authorization failed.";
+          document.getElementById("message").innerText = "✅ All files downloaded!";
+        } else {
+          document.getElementById("message").innerText = "❌ Authorization failed.";
+        }
+      } catch (err) {
+        document.getElementById("message").innerText = `❌ Error: ${err.message}`;
+        console.error(err);
       }
     }
   };
