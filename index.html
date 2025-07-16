@@ -146,10 +146,17 @@
   });
 
   if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Spotify API error:", res.status, errorText);
-    throw new Error(`Failed to fetch audio features: ${res.status}`);
-  }
+  const errorText = await res.text();
+  console.error("Spotify API error", {
+    status: res.status,
+    statusText: res.statusText,
+    url,
+    token: accessToken,
+    body: errorText
+  });
+  throw new Error(`Failed to fetch audio features: ${res.status}`);
+}
+
 
   const data = await res.json();
   console.log("Audio features:", data);
