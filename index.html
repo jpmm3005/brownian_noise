@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Spotify Top Tracks to CSV</title>
+  <link rel="stylesheet" href="style.css">
   <style>
     body {
       font-family: sans-serif;
@@ -136,29 +137,31 @@
     }
 
     function downloadCSV(data) {
-      const headers = ["name", "artist", "album", "popularity", "duration_ms"];
+      const headers = ["id", "name", "artist", "album", "popularity", "duration_ms"];
       const rows = data.items.map(track => [
-        `"${track.name.replace(/"/g, '""')}"`,
-        `"${track.artists.map(a => a.name).join(", ").replace(/"/g, '""')}"`,
-        `"${track.album.name.replace(/"/g, '""')}"`,
-        track.popularity,
-        track.duration_ms
-      ]);
+      track.id,
+      `"${track.name.replace(/"/g, '""')}"`,
+      `"${track.artists.map(a => a.name).join(", ").replace(/"/g, '""')}"`,
+      `"${track.album.name.replace(/"/g, '""')}"`,
+      track.popularity,
+      track.duration_ms
+    ]);
 
       const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
 
-      const blob = new Blob([csvContent], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "top_tracks.csv";
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "top_tracks.csv";
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
 
     window.onload = async () => {
       const params = new URLSearchParams(window.location.search);
