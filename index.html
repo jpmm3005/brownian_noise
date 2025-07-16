@@ -170,6 +170,8 @@
       if (code) {
         const tokenResponse = await getAccessToken(code);
         if (tokenResponse.access_token) {
+          console.log("Access Token:", tokenResponse.access_token);
+          localStorage.setItem("access_token", tokenResponse.access_token); 
           getTopTracks(tokenResponse.access_token);
         } else {
           document.getElementById("message").innerText = "Authorization failed.";
