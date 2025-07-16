@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Spotify Top Tracks to CSV</title>
-  <link rel="stylesheet" href="style.css">
+  <!--<link rel="stylesheet" href="style.css">--->
   <style>
     body {
       font-family: sans-serif;
@@ -127,6 +127,12 @@
       headers: { Authorization: `Bearer ${token}` }
     });
 
+  if (!response.ok) {
+    const error = await response.json();
+    console.error("Error fetching top tracks:", error);
+    throw new Error(`Spotify API error: ${response.status}`);
+  }
+
     const data = await response.json();
     return data;
   }
@@ -143,6 +149,13 @@
           Authorization: `Bearer ${token}`
         }
       });
+
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Error fetching Audio Features:", error);
+      throw new Error(`Spotify API error: ${response.status}`);
+    }
 
       if (res.status === 200) {
         const data = await res.json();
