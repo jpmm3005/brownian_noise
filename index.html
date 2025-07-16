@@ -133,9 +133,7 @@
 
     return await response.json();
   }
-  async function getAudioFeatures(trackIds) {
-  const accessToken = localStorage.getItem("access_token"); // or however you store it
-
+  async function getAudioFeatures(token, trackIds) {
   const url = `https://api.spotify.com/v1/audio-features?ids=${trackIds.join(",")}`;
 
   const res = await fetch(url, {
