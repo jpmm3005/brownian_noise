@@ -1,59 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <title>Spotify Track Similarity</title>
-  <style>
-    body { font-family: sans-serif; text-align: center; background: #f4f4f4; padding: 40px; }
-    button { padding: 10px 20px; font-size: 16px; }
-    #trackInfo { margin-top: 20px; }
-  </style>
+  <title>Spotify PKCE Login</title>
 </head>
 <body>
-  <h1>Find Similar Songs</h1>
-  <button onclick="authorize()">Login with Spotify</button>
-  <div id="trackInfo"></div>
+  <h1>Login with Spotify</h1>
+  <input id="clientIdInput" placeholder="Enter your Spotify Client ID" size="40" />
+  <button onclick="startLogin()">Login</button>
+  <pre id="output"></pre>
 
   <script>
-    const client_id = "b64fd8d41ec347fc9920a1549e265fcc"; // Replace with your Spotify Client ID
-    const redirect_uri = "https://jpmm3005.github.io/brownian_noise/"; // Replace with your redirect URI
-    const backend_url = "http://localhost:5000/get_similar"; // Update if different
+    const redirect_uri = "https://jpmm3005.github.io/brownian_noise/";
 
-    function authorize() {
-      const scopes = 'user-top-read';
-      const authUrl = `https://accounts.spotify.com/authorize?client_id=${client_id}&response_type=token&redirect_uri=${encodeURIComponent(redirect_uri)}&scope=${scopes}`;
-      window.location.href = authUrl;
-    }
-
-    async function fetchTopTrack(accessToken) {
-      const res = await fetch('https://api.spotify.com/v1/me/top/tracks?limit=1', {
-        headers: { Authorization: 'Bearer ' + accessToken }
-      });
-      const data = await res.json();
-      const track = data.items[0];
-      const trackName = track.name;
-      const artistName = track.artists[0].name;
-
-      document.getElementById("trackInfo").innerText = `Top Track: ${trackName} by ${artistName}`;
-
-      // Send to Python backend
-      await fetch(backend_url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ track_name: trackName, artist_name: artistName })
-      });
-    }
-
-    // On redirect back from Spotify
-    window.onload = () => {
-      const hash = window.location.hash;
-      if (hash) {
-        const token = new URLSearchParams(hash.substring(1)).get('access_token');
-        if (token) fetchTopTrack(token);
+    function generateRandomString(length) {
+      const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let text = '';
+      for (let i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
       }
-    };
+      return text;
+    }
+
+    async function generateCodeChallenge(codeVerifier) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(codeVerifier);
+      const digest = await crypto.subtle.digest('SHA-256', data);
+      return btoa(String.fromCharCode(...new Uint8Array(digest)))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+    }
+
+    async function startLogin() {
+      const clientId = document.getElementById("clientIdInput").value;
+      if (!clientId) return alert("Please enter a client ID");
+
+      const codeVerifier = generateRandomString(128);
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
+      localStorage.setItem("code_verifier", codeVerifier);
+      localStorage.setItem("client_id", clientId);
+
+      const state = generateRandomString(16);
+      const scope = "user-top-read";
+
+      const args = new URLSearchParams({
+        response_type: "code",
+        client_id: clientId,
+        scope,
+        redirect_uri,
+        state,
+        code_challenge_method: "S256",
+        code_challenge: codeChallenge,
+      });
+
+      window.location = `https://accounts.spotify.com/authorize?${args}`;
+    }
+
+    async function handleRedirect() {
+      const code = new URLSearchParams(window.location.search).get("code");
+      if (!code) return;
+
+      const codeVerifier = localStorage.getItem("code_verifier");
+      const clientId = localStorage.getItem("client_id");
+
+      const body = new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        redirect_uri,
+        client_id: clientId,
+        code_verifier: codeVerifier,
+      });
+
+      const response = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body,
+      });
+
+      const data = await response.json();
+      if (data.access_token) {
+        localStorage.setItem("access_token", data.access_token);
+        document.getElementById("output").innerText = "Access Token:\n" + data.access_token;
+      } else {
+        document.getElementById("output").innerText = "Error:\n" + JSON.stringify(data, null, 2);
+      }
+    }
+
+    handleRedirect();
   </script>
 </body>
 </html>
