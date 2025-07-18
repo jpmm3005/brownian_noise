@@ -124,47 +124,21 @@
     const response = await fetch("https://api.spotify.com/v1/me/top/tracks?limit=50", {
       headers: { Authorization: `Bearer ${token}` }
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      console.error("Error fetching top tracks:", error);
-      throw new Error(`Spotify API error: ${response.status}`);
-    }
-
+    if (!response.ok) throw new Error("Failed to fetch top tracks");
     return await response.json();
   }
-  async function getAudioFeatures(token, trackIds) {
-  const url = `https://api.spotify.com/v1/audio-features?ids=${trackIds.join(",")}`;
 
-  const res = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Authorization": `Bearer ${token}`
-    }
-  });
+  async function getSimilarTracks(token, seedTrackId) {
+    const response = await fetch(`https://api.spotify.com/v1/recommendations?seed_tracks=${seedTrackId}&limit=10`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error("Failed to fetch similar tracks");
+    return await response.json();
+  }
 
-  if (!res.ok) {
-  const errorText = await res.text();
-  console.error("Spotify API error", {
-    status: res.status,
-    statusText: res.statusText,
-    url,
-    token: token,
-    body: errorText
-  });
-  throw new Error(`Failed to fetch audio features: ${res.status}`);
-}
-
-
-  const data = await res.json();
-  console.log("Audio features:", data);
-  return data;
-}
-
-
-  function downloadCSVFromTracks(data) {
+  function downloadCSVFromTracks(data, filename) {
     const headers = ["id", "name", "artist", "album", "popularity", "duration_ms"];
-    const rows = data.items.map(track => [
+    const rows = data.map(track => [
       track.id,
       `"${track.name.replace(/"/g, '""')}"`,
       `"${track.artists.map(a => a.name).join(", ").replace(/"/g, '""')}"`,
@@ -175,25 +149,7 @@
 
     const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv" });
-    triggerDownload(blob, "top_tracks.csv");
-  }
-
-  function downloadAudioCSV(features) {
-    if (features.length === 0) {
-      document.getElementById("message").innerText = "⚠️ No audio features found to download.";
-      return;
-    }
-    const headers = Object.keys(features[0]);
-    const rows = features.map(f => headers.map(h => f[h]));
-    const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    triggerDownload(blob, "audio_features.csv");
-  }
-
-  function downloadToken(token) {
-    const blob = new Blob([token], { type: "text/plain" });
-    triggerDownload(blob, "access_token.txt");
+    triggerDownload(blob, filename);
   }
 
   function triggerDownload(blob, filename) {
@@ -213,21 +169,22 @@
     const code = params.get("code");
 
     if (code) {
-      document.getElementById("message").innerText = "⏳ Fetching your top tracks and audio features...";
+      document.getElementById("message").innerText = "⏳ Fetching your top tracks and similar songs...";
       try {
         const tokenResponse = await getAccessToken(code);
-        console.log(tokenResponse);
 
         if (tokenResponse.access_token) {
           const topTrackData = await getTopTracks(tokenResponse.access_token);
-          downloadCSVFromTracks(topTrackData);
-          downloadToken(tokenResponse.access_token);
+          const topTracks = topTrackData.items;
+          downloadCSVFromTracks(topTracks, "top_tracks.csv");
 
-          const trackIds = topTrackData.items.map(track => track.id);
-          const features = await getAudioFeatures(tokenResponse.access_token, trackIds);
-          downloadAudioCSV(features);
+          // Pick the first track to get recommendations
+          if (topTracks.length > 0) {
+            const similarData = await getSimilarTracks(tokenResponse.access_token, topTracks[0].id);
+            downloadCSVFromTracks(similarData.tracks, "similar_tracks.csv");
+          }
 
-          document.getElementById("message").innerText = "✅ All files downloaded!";
+          document.getElementById("message").innerText = "✅ Files downloaded: Top 50 Tracks & 10 Similar Songs!";
         } else {
           document.getElementById("message").innerText = "❌ Authorization failed.";
         }
