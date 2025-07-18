@@ -1,77 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Spotify Top Tracks to CSV</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background-color: #f4f4f4;
-      color: #333;
-      text-align: center;
-      padding: 40px;
-    }
+const redirectUri = "https://jpmm3005.github.io/brownian_noise/";
+const scopes = "user-top-read user-read-private";
 
-    h1 {
-      margin-bottom: 20px;
-    }
-
-    input[type="text"] {
-      padding: 10px;
-      font-size: 16px;
-      width: 300px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      background-color: #1db954;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
-      border-radius: 24px;
-      cursor: pointer;
-      margin-top: 20px;
-    }
-
-    button:hover {
-      background-color: #17a44c;
-    }
-
-    #message {
-      margin-top: 20px;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
-  <h1>Export Your Spotify Top Tracks</h1>
-
-  <div>
-    <input id="clientIdInput" type="text" placeholder="Enter your Spotify Client ID" />
-    <br />
-    <button onclick="redirectToSpotify()">Login with Spotify</button>
-  </div>
-
-  <div id="message"></div>
-  <script>
-  const redirectUri = "https://jpmm3005.github.io/brownian_noise/";
-  const scopes = "user-top-read user-read-private";
-
-  function generateRandomString(length) {
+function generateRandomString(length) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
     return Array.from(crypto.getRandomValues(new Uint8Array(length)))
-                .map(x => chars[x % chars.length])
-                .join('');
-  }
+            .map(x => chars[x % chars.length])
+            .join('');
+}
 
-  async function generateCodeChallenge(codeVerifier) {
+async function generateCodeChallenge(codeVerifier) {
     const data = new TextEncoder().encode(codeVerifier);
     const digest = await crypto.subtle.digest('SHA-256', data);
     return btoa(String.fromCharCode(...new Uint8Array(digest)))
       .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  }
+}
 
   async function redirectToSpotify() {
     const clientId = document.getElementById("clientIdInput").value.trim();
@@ -194,6 +136,4 @@
       }
     }
   };
-  </script>
-</body>
-</html>
+  

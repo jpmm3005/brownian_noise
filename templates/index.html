@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Spotify Track Similarity</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; background: #f4f4f4; padding: 40px; }
+    button { padding: 10px 20px; font-size: 16px; }
+    #trackInfo { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Find Similar Songs</h1>
+  <button onclick="authorize()">Login with Spotify</button>
+  <div id="trackInfo"></div>
+
+  <script>
+    const client_id = "b64fd8d41ec347fc9920a1549e265fcc"; // Replace with your Spotify Client ID
+    const redirect_uri = "https://jpmm3005.github.io/brownian_noise/"; // Replace with your redirect URI
+    const backend_url = "http://localhost:5000/get_similar"; // Update if different
+
+    function authorize() {
+      const scopes = 'user-top-read';
+      const authUrl = `https://accounts.spotify.com/authorize?client_id=${client_id}&response_type=token&redirect_uri=${encodeURIComponent(redirect_uri)}&scope=${scopes}`;
+      window.location.href = authUrl;
+    }
+
+    async function fetchTopTrack(accessToken) {
+      const res = await fetch('https://api.spotify.com/v1/me/top/tracks?limit=1', {
+        headers: { Authorization: 'Bearer ' + accessToken }
+      });
+      const data = await res.json();
+      const track = data.items[0];
+      const trackName = track.name;
+      const artistName = track.artists[0].name;
+
+      document.getElementById("trackInfo").innerText = `Top Track: ${trackName} by ${artistName}`;
+
+      // Send to Python backend
+      await fetch(backend_url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ track_name: trackName, artist_name: artistName })
+      });
+    }
+
+    // On redirect back from Spotify
+    window.onload = () => {
+      const hash = window.location.hash;
+      if (hash) {
+        const token = new URLSearchParams(hash.substring(1)).get('access_token');
+        if (token) fetchTopTrack(token);
+      }
+    };
+  </script>
+</body>
+</html>
